@@ -64,6 +64,14 @@ app.post("/urls/:shortURL/delete", (req, res)=>{
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
+app.post("/urls/:id", (req, res)=>{
+  const newLongURL = req.body.newLongURL;
+  const shortURL = req.params.id;
+  urlDatabase[shortURL] = newLongURL;
+  const templateVars = {shortURL: req.params.id, longURL: 
+  urlDatabase[req.params.id]};
+  res.render("urls_show", templateVars);
+});
 app.listen(PORT, ()=>{
   console.log(`Example listening on port ${PORT}`);
 });
