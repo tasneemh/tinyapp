@@ -72,6 +72,12 @@ app.post("/urls/:id", (req, res)=>{
   urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 });
+app.post("/login", (req, res)=>{
+  //we get req.body object
+  console.log(req.body);
+  res.cookie('username',req.body.username);
+  res.redirect("/urls");
+});
 app.listen(PORT, ()=>{
   console.log(`Example listening on port ${PORT}`);
 });
