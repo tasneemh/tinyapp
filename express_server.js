@@ -44,10 +44,22 @@ app.get("/urls/:shortURL", (req, res)=>{
   // console.log(req.params.shortURL); //shortURL: req.params.shortURL
   // console.log(urlDatabase[req.params.shortURL]); // longURL: urlDatabase[shortURL]
 });
-app.post("/urls", (req, res)=>{
-  console.log(req.body);
-  res.send("Ok");
+app.get("/u/:shortURL", (req, res) => {
+  // const longURL = ...
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
+app.post("/urls", (req, res)=>{
+  // console.log("req.body:",req.body);
+  // console.log(req.body.longURL);
+  // res.send("Ok");
+  const string = generateRandomString();
+  // console.log(string);
+  urlDatabase[string] = req.body.longURL
+  res.redirect(`/urls/${string}`);
+  // console.log(urlDatabase);
+});
+
 app.listen(PORT, ()=>{
   console.log(`Example listening on port ${PORT}`);
 });
