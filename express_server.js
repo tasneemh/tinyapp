@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 //below code helps in using body-parser
@@ -6,6 +7,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 //below code tells express to use ejs as templating engine
 app.set("view engine", "ejs");
+app.use(cookieParser());
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -31,15 +33,16 @@ app.get("/fetch", (req, res)=>{
 });
 */
 app.get("/urls", (req, res)=>{
-  const templateVars = {urls: urlDatabase};
+  const templateVars = {urls: urlDatabase, username: req.cookies.username};
   res.render("urls_index", templateVars);
 });
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res)=>{
-  res.render("urls_new");
+  const templateVars = {username: req.cookies.username};
+  res.render("urls_new", templateVars);
 });
 app.get("/urls/:shortURL", (req, res)=>{
-  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username};
   res.render("urls_show", templateVars);
   // console.log(req.params.shortURL); //shortURL: req.params.shortURL
   // console.log(urlDatabase[req.params.shortURL]); // longURL: urlDatabase[shortURL]
@@ -59,6 +62,7 @@ app.post("/urls", (req, res)=>{
   res.redirect(`/urls/${string}`);
   // console.log(urlDatabase);
 });
+//delete url
 app.post("/urls/:shortURL/delete", (req, res)=>{
   // delete shortURL;
   delete urlDatabase[req.params.shortURL];
@@ -69,8 +73,19 @@ app.post("/urls/:id", (req, res)=>{
   const shortURL = req.params.id;
   urlDatabase[shortURL] = newLongURL;
   const templateVars = {shortURL: req.params.id, longURL: 
-  urlDatabase[req.params.id]};
+  urlDatabase[req.params.id], username: req.cookies.username};
   res.render("urls_show", templateVars);
+});
+
+app.post("/login", (req, res)=>{
+  //we get req.body object
+  console.log(req.body);
+  res.cookie('username',req.body.username);
+  res.redirect("/urls");
+});
+app.post("/logout", (req, res)=>{
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 app.listen(PORT, ()=>{
   console.log(`Example listening on port ${PORT}`);
