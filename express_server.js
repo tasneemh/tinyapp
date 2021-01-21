@@ -45,6 +45,8 @@ app.get("/fetch", (req, res)=>{
 */
 app.get("/urls", (req, res)=>{
   const templateVars = {urls: urlDatabase, myUser: users[req.cookies.user_id]};
+  console.log(req.cookies);
+  console.log(users);
   res.render("urls_index", templateVars);
 });
 //Add a GET Route to Show the Form
@@ -75,18 +77,28 @@ app.post("/urls", (req, res)=>{
 });
 //register page
 app.get("/register", (req, res)=>{
-  res.render("registration");
+  const templateVars = {myUser: null};
+  res.render("registration", templateVars);
 });
 
 //post for register page
 app.post("/register", (req, res)=>{
+  const id = req.body;
+  console.log(req.body);
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
+    if (incomingEmail === "" || incomingPassword === ""){
+      res.status(400);
+      res.send("Your email/password is incorrect");
+      return;
+    }
   //we should check if email exists
     if (emailExists(users, incomingEmail)){
       console.log("email exists");
-      res.redirect("/register")
-    } else {
+      res.status(400);
+      res.send("Email already exists");
+      // res.redirect("/register");
+    }  else {
       //if we want to add the user to the users object
       const newId = generateRandomString();
       const newUser = {
@@ -115,15 +127,35 @@ app.post("/urls/:id", (req, res)=>{
   urlDatabase[req.params.id],  myUser: users[req.cookies.user_id]};
   res.render("urls_show", templateVars);
 });
-
+//get login page
+app.get("/login", (req, res)=>{
+  //const isLoggedIn = true;
+  const templateVars = {myUser: null};
+  res.render("login", templateVars);
+});
+//post login page
 app.post("/login", (req, res)=>{
   //we get req.body object
   console.log(req.body);
-  res.cookie('username',req.body.username);
-  res.redirect("/urls");
+  const incomingEmail = req.body.email;
+  const incomingPassword = req.body.password;
+  //const newId = generateRandomString();
+    if (emailExists(users, incomingEmail)){
+      if (passwordMatching(users, incomingPassword)){
+        const newId = getUserId(users, incomingEmail);
+        res.cookie('user_id', newId);
+        res.redirect("/urls");
+      } else {
+        res.status(403);
+        res.send("Password does not match with our records");
+      }
+    } else {
+      res.status(403);
+      res.send("Email does not match with our records");
+    }
 });
 app.post("/logout", (req, res)=>{
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -136,9 +168,43 @@ const generateRandomString = function() {
 };
 //callback to check if user exists
 const emailExists = function(userDatabase, email){
-  if (userDatabase[email]){
-    return true;
-  } else {
-    return false;
-  }
+  for (let user in userDatabase){
+      if (userDatabase[user].email === email){
+      return true;
+    } 
+  } 
+  return false;
 };
+const passwordMatching = function(userDatabase, password){
+  for (let user in userDatabase){
+    if (userDatabase[user].password === password){
+      return true;
+    }
+  }
+  return false;
+};
+const getUserId = function(userDatabase, email){
+  for (let user in userDatabase){
+      if (userDatabase[user].email === email){
+      return user;
+    } 
+  } 
+  return undefined;
+};
+
+/*
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+*/
+
+// console.log(emailExists(users, "user@example.com"));
