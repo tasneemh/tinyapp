@@ -40,6 +40,7 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+
 //redirects to /urls if user is logged in else redirects to /login
 app.get("/", (req, res) => {
   if (req.session.cookieUserId) {
@@ -50,13 +51,18 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const cookieUserId = req.session.cookieUserId;
-  const resultObj = urlsForUser(urlDatabase, cookieUserId);
-  const templateVars = { urls: resultObj, myUser: users[req.session.cookieUserId] };
-  console.log(req.session);
-  console.log(users);
-  res.render("urls_index", templateVars);
+  console.log(req.session.cookieUserId);
+  if (req.session.cookieUserId){
+    
+    const cookieUserId = req.session.cookieUserId;
+    const resultObj = urlsForUser(urlDatabase, cookieUserId);
+    const templateVars = { urls: resultObj, myUser: users[req.session.cookieUserId] };
+    res.render("urls_index", templateVars);
+  } else {
+    res.send("<html><body>You are not logged in to access this page</body></html>");
+  }
 });
+
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
   if (req.session.cookieUserId && users[req.session.cookieUserId]) {
@@ -86,6 +92,7 @@ app.get("/urls/:shortURL", (req, res) => {
     res.send(`<html><body>You are not logged in!</body></html>`);
   }
 });
+
 //redirects to the longURl website
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -103,6 +110,7 @@ app.post("/urls", (req, res) => {
   };
   res.redirect(`/urls/${shortURL}`);
 });
+
 //register page
 app.get("/register", (req, res) => {
   console.log(req.session);
@@ -140,6 +148,7 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 });
+
 //delete url
 app.post("/urls/:shortURL/delete", (req, res) => {
   const cookieUserId = req.session.cookieUserId;
@@ -164,15 +173,17 @@ app.post("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
+
 //get login page
 app.get("/login", (req, res) => {
   const templateVars = { myUser: null };
   res.render("login", templateVars);
 });
+
 //post login page
 app.post("/login", (req, res) => {
   //we get req.body object
-  console.log(req.body);
+  //console.log(req.body);
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
   if (emailExists(users, incomingEmail)) {
@@ -192,11 +203,13 @@ app.post("/login", (req, res) => {
     );
   }
 });
+
 //logout page
 app.post("/logout", (req, res) => {
   //setting the cookies
   req.session = null;
-  res.redirect("/urls");
+  //res.clearCookie.cookieUserId; 
+  res.redirect("/login");
 });
 
 //server listening to http requests via port
