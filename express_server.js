@@ -43,32 +43,37 @@ const users = {
 
 //redirects to /urls if user is logged in else redirects to /login
 app.get("/", (req, res) => {
+  //if user is logged in
   if (req.session.cookieUserId) {
     res.redirect("/urls");
   } else {
+    //if user is not logged in
     res.redirect("/login");
   }
 });
 
 app.get("/urls", (req, res) => {
-  console.log(req.session.cookieUserId);
+  //console.log(req.session.cookieUserId);
+  //if user is logged in
   if (req.session.cookieUserId){
-
     const cookieUserId = req.session.cookieUserId;
     const resultObj = urlsForUser(urlDatabase, cookieUserId);
     const templateVars = { urls: resultObj, myUser: users[req.session.cookieUserId] };
     res.render("urls_index", templateVars);
   } else {
+    //if user is not logged in
     res.send("<html><body>You are not logged in to access this page</body></html>");
   }
 });
 
 //Add a GET Route to Show the Form
 app.get("/urls/new", (req, res) => {
+  //if user is logged in
   if (req.session.cookieUserId && users[req.session.cookieUserId]) {
     const templateVars = { myUser: users[req.session.cookieUserId] };
     res.render("urls_new", templateVars);
   } else {
+    //if user is not logged in
     res.redirect("/login");
   }
 });
@@ -77,6 +82,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const cookieUserId = req.session.cookieUserId;
   const urlUserId = urlDatabase[req.params.shortURL].userID;
+  //if user is logged in
   if (cookieUserId) {
     if (cookieUserId === urlUserId) {
       const templateVars = {
@@ -88,6 +94,7 @@ app.get("/urls/:shortURL", (req, res) => {
     } else {
       res.send("<html><body>This is not your shortURL</body></html>");
     }
+    //if user is not logged in
   } else {
     res.send(`<html><body>You are not logged in!</body></html>`);
   }
@@ -96,13 +103,14 @@ app.get("/urls/:shortURL", (req, res) => {
 //redirects to the longURl website
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  console.log(shortURL);
+  //console.log(shortURL);
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 //creating new  urls
 app.post("/urls", (req, res) => {
+  //user logged in
   if (req.session.cookieUserId){
   const shortURL = generateRandomString(); //generating shortURL
   urlDatabase[shortURL] = {
@@ -111,6 +119,7 @@ app.post("/urls", (req, res) => {
   };
   res.redirect(`/urls/${shortURL}`);
   } else {
+    //user not logged in
     res.send("<html><body>You must be logged in to do that</body></html>");
   }
   
@@ -118,7 +127,7 @@ app.post("/urls", (req, res) => {
 
 //register page
 app.get("/register", (req, res) => {
-  console.log(req.session);
+  //console.log(req.session);
   const templateVars = { myUser: null };
   res.render("registration", templateVars);
 });
