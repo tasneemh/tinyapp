@@ -53,7 +53,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   console.log(req.session.cookieUserId);
   if (req.session.cookieUserId){
-    
+
     const cookieUserId = req.session.cookieUserId;
     const resultObj = urlsForUser(urlDatabase, cookieUserId);
     const templateVars = { urls: resultObj, myUser: users[req.session.cookieUserId] };
@@ -103,12 +103,17 @@ app.get("/u/:shortURL", (req, res) => {
 
 //creating new  urls
 app.post("/urls", (req, res) => {
+  if (req.session.cookieUserId){
   const shortURL = generateRandomString(); //generating shortURL
   urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: req.session.cookieUserId,
+  longURL: req.body.longURL,
+  userID: req.session.cookieUserId,
   };
   res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.send("<html><body>You must be logged in to do that</body></html>");
+  }
+  
 });
 
 //register page
@@ -209,7 +214,7 @@ app.post("/logout", (req, res) => {
   //setting the cookies
   req.session = null;
   //res.clearCookie.cookieUserId; 
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
 //server listening to http requests via port

@@ -29,7 +29,7 @@ const urlsForUser = (urlDatabase, userId) => {
   return userUrls;
 };
 //get userId by email
-const getUserByEmail = function(email, userDatabase) {
+const getUserByEmail = function(userDatabase, email) {
   for (let userID in userDatabase) {
     if (userDatabase[userID].email === email) {
       return userID;
